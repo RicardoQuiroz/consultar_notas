@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consulta de Notas</title>
+<style>
+
+/* ──────────────────────────────────────────────────────────
+   VARIABLES DE TEMA
+   ────────────────────────────────────────────────────────── */
+:root {
+  --accent:    #6366F1;
+  --accent-h:  #4F46E5;
+  --accent-bg: rgba(99,102,241,.10);
+
+  --bg:        #F1F5F9;
+  --surface:   #FFFFFF;
+  --surface2:  #F8FAFC;
+  --text:      #0F172A;
+  --muted:     #64748B;
+  --border:    #E2E8F0;
+  --shadow:    0 2px 16px rgba(15,23,42,.07);
+  --shadow-h:  0 8px 32px rgba(15,23,42,.15);
+
+  --ok:        #10B981;  --ok-bg:  rgba(16,185,129,.12);
+  --mid:       #F59E0B;  --mid-bg: rgba(245,158,11,.12);
+  --low:       #EF4444;  --low-bg: rgba(239,68,68,.12);
+  --nil:       #94A3B8;  --nil-bg: rgba(148,163,184,.12);
+
+  --r:  14px;
+  --tr: .25s ease;
+}
+
+[data-theme="dark"] {
+  --bg:        #0F172A;
+  --surface:   #1E293B;
+  --surface2:  #162032;
+  --text:      #F1F5F9;
+  --muted:     #94A3B8;
+  --border:    #334155;
+  --shadow:    0 2px 16px rgba(0,0,0,.4);
+  --shadow-h:  0 8px 32px rgba(0,0,0,.6);
+}
+
+/* ──────────────────────────────────────────────────────────
+   RESET
+   ────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  transition: background var(--tr), color var(--tr);
+}
+
+button { font-family: inherit; cursor: pointer; }
+input  { font-family: inherit; }
+
+/* ──────────────────────────────────────────────────────────
+   HEADER
+   ────────────────────────────────────────────────────────── */
+header {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 28px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transition: background var(--tr), border-color var(--tr);
+}
+
+.brand { display: flex; align-items: center; gap: 11px; }
+.brand-icon {
+  width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--accent), #818CF8);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.brand-text h1 { font-size: 15px; font-weight: 700; letter-spacing: -.2px; }
+.brand-text p  { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+.theme-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 15px;
+  border: 1px solid var(--border); border-radius: 50px;
+  background: var(--surface2); color: var(--text);
+  font-size: 13px; font-weight: 500;
+  transition: all var(--tr);
+}
+.theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ──────────────────────────────────────────────────────────
+   MAIN / LAYOUT
+   ────────────────────────────────────────────────────────── */
+main { max-width: 860px; margin: 0 auto; padding: 52px 24px 88px; }
+
+/* ──────────────────────────────────────────────────────────
+   SECCIÓN BÚSQUEDA
+   ────────────────────────────────────────────────────────── */
+.search-wrap { text-align: center; padding-bottom: 48px; }
+
+.search-wrap h2 {
+  font-size: 32px; font-weight: 800; letter-spacing: -.7px;
+  background: linear-gradient(135deg, var(--accent), #A78BFA);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 6px;
+}
+.search-wrap .sub { color: var(--muted); font-size: 15px; margin-bottom: 30px; }
+
+.search-row {
+  display: flex; gap: 10px;
+  max-width: 400px; margin: 0 auto;
+}
+
+.search-row input {
+  flex: 1; padding: 13px 18px;
+  border: 2px solid var(--border); border-radius: var(--r);
+  font-size: 16px; background: var(--surface); color: var(--text);
+  outline: none; transition: border-color var(--tr), background var(--tr);
+}
+.search-row input:focus  { border-color: var(--accent); }
+.search-row input::placeholder { color: var(--muted); }
+
+.btn-primary {
+  padding: 13px 22px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: var(--r);
+  font-size: 15px; font-weight: 600; white-space: nowrap;
+  transition: background var(--tr), transform .1s;
+}
+.btn-primary:hover   { background: var(--accent-h); }
+.btn-primary:active  { transform: scale(.97); }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Loading */
+.loader {
+  display: none; align-items: center; justify-content: center;
+  gap: 9px; color: var(--muted); font-size: 14px; margin-top: 14px;
+}
+.loader.on { display: flex; }
+.spin {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid var(--border); border-top-color: var(--accent);
+  animation: spin .65s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Error */
+.err-msg {
+  display: none; margin-top: 13px; padding: 10px 16px;
+  background: rgba(239,68,68,.10); color: #EF4444;
+  border: 1px solid rgba(239,68,68,.25); border-radius: var(--r);
+  font-size: 14px;
+}
+.err-msg.on { display: inline-block; }
+
+/* ──────────────────────────────────────────────────────────
+   RESULTADOS
+   ────────────────────────────────────────────────────────── */
+#results { display: none; animation: fadeUp .4s ease; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Tarjeta estudiante */
+.student-card {
+  display: flex; align-items: center; gap: 16px;
+  padding: 22px 24px; margin-bottom: 30px;
+  background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--r);
+  box-shadow: var(--shadow);
+}
+.s-avatar {
+  width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--accent), #818CF8);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 800; color: #fff;
+}
+.s-name { font-size: 18px; font-weight: 700; letter-spacing: -.3px; }
+.s-meta { display: flex; align-items: center; gap: 8px; margin-top: 5px; flex-wrap: wrap; }
+.tag {
+  font-size: 12px; font-weight: 600;
+  padding: 3px 11px; border-radius: 20px;
+  background: var(--accent-bg); color: var(--accent);
+}
+
+/* Etiqueta de sección */
+.sec-label {
+  font-size: 12px; font-weight: 700; letter-spacing: .8px;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 12px;
+}
+
+/* Grid de tareas */
+.tasks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+/* Tarjeta de tarea */
+.task-card {
+  background: var(--surface);
+  border: 2px solid var(--border); border-radius: var(--r);
+  padding: 18px 14px; text-align: center;
+  position: relative; overflow: hidden;
+  cursor: pointer; box-shadow: var(--shadow);
+  transition: transform var(--tr), box-shadow var(--tr), border-color var(--tr), background var(--tr);
+}
+/* Barra de color superior */
+.task-card::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 3px; background: var(--tint, var(--nil));
+  transition: background var(--tr);
+}
+.task-card:hover  { transform: translateY(-3px); box-shadow: var(--shadow-h); }
+.task-card.active { border-color: var(--accent); background: var(--surface2); }
+
+.t-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .7px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
+}
+
+.grade-ring {
+  width: 64px; height: 64px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 10px;
+  font-size: 17px; font-weight: 800;
+  transition: background var(--tr), color var(--tr);
+}
+.g-ok  { background: var(--ok-bg);  color: var(--ok);  }
+.g-mid { background: var(--mid-bg); color: var(--mid); }
+.g-low { background: var(--low-bg); color: var(--low); }
+.g-nil { background: var(--nil-bg); color: var(--nil); }
+
+.t-status {
+  font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.s-ok  { color: var(--ok);  }
+.s-no  { color: var(--nil); }
+
+/* Panel de feedback */
+.feedback-panel {
+  display: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--r);
+  padding: 22px 26px;
+  box-shadow: var(--shadow);
+  animation: fadeUp .3s ease;
+}
+.feedback-panel.on { display: block; }
+
+.fb-title {
+  font-size: 12px; font-weight: 700; letter-spacing: .6px;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
+}
+.fb-body {
+  line-height: 1.78; font-size: 15px; color: var(--text);
+}
+.fb-body.empty { color: var(--muted); font-style: italic; }
+
+/* ──────────────────────────────────────────────────────────
+   RESPONSIVE
+   ────────────────────────────────────────────────────────── */
+@media (max-width: 540px) {
+  header { padding: 12px 16px; }
+  .brand-text p { display: none; }
+  main { padding: 32px 16px 64px; }
+  .search-wrap h2 { font-size: 24px; }
+  .search-row { flex-direction: column; }
+  .tasks-grid { grid-template-columns: repeat(2, 1fr); }
+  .student-card { padding: 16px; }
+  .s-name { font-size: 15px; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ HEADER ═══════════════════════════ -->
+<header>
+  <div class="brand">
+    <div class="brand-icon">📚</div>
+    <div class="brand-text">
+      <h1 id="hName">Cargando…</h1>
+      <p  id="hSub"></p>
+    </div>
+  </div>
+  <button class="theme-btn" id="themeBtn">
+    <span id="themeIcon">🌙</span>
+    <span id="themeLbl">Modo oscuro</span>
+  </button>
+</header>
+
+<!-- ═══════════════════════════ MAIN ════════════════════════════ -->
+<main>
+
+  <!-- Búsqueda -->
+  <div class="search-wrap">
+    <h2>Consulta tus notas</h2>
+    <p class="sub">Ingresa tu número de Cédula de Identidad</p>
+    <div class="search-row">
+      <input id="ciInput" type="text" placeholder="Ej. 12394409"
+             inputmode="numeric" maxlength="12" autocomplete="off">
+      <button class="btn-primary" id="searchBtn">Buscar</button>
+    </div>
+    <div class="loader"   id="loader"><div class="spin"></div>Buscando…</div>
+    <div class="err-msg"  id="errMsg"></div>
+  </div>
+
+  <!-- Resultados -->
+  <section id="results">
+
+    <!-- Info estudiante -->
+    <div class="student-card">
+      <div class="s-avatar" id="sAvatar">?</div>
+      <div>
+        <div class="s-name" id="sName">—</div>
+        <div class="s-meta">
+          <span class="tag" id="sTurno" style="display:none"></span>
+          <span class="tag" id="sCI"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tarjetas de tareas -->
+    <div class="sec-label">Calificaciones por tarea</div>
+    <div class="tasks-grid" id="tasksGrid"></div>
+
+    <!-- Feedback -->
+    <div class="feedback-panel" id="fbPanel">
+      <div class="fb-title" id="fbTitle">Feedback</div>
+      <p class="fb-body"    id="fbBody"></p>
+    </div>
+
+  </section>
+</main>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   CONFIGURACIÓN — EDITA ESTAS CONSTANTES PARA CADA MATERIA
+   ════════════════════════════════════════════════════════════════
+
+   SCRIPT_URL : URL del Web App de Apps Script (desplegado como
+                "Aplicación web" con acceso "Todos")
+   TASKS      : Array con los nombres EXACTOS de las hojas
+                de tareas en el Google Sheet (ej. ['T1','T2','T3'])
+   TASK_LABELS: Nombre descriptivo para cada hoja (opcional)
+   COURSE_NAME: Nombre de la materia que aparece en el header
+   SUBTITLE   : Subtítulo del header
+
+   ════════════════════════════════════════════════════════════════ */
+const CONFIG = {
+  COURSE_NAME:  'IA y Nuevas Narrativas',
+  SUBTITLE:     'Consulta de calificaciones · 2026',
+
+  SCRIPT_URL:   'https://script.google.com/macros/s/AKfycbw6-l49UgIZDPS6mKGqli-7vxKg-1fcvbqBL6ccjzaLKrdbPCniOVOoi4kpMvGplvNg/exec',
+
+  TASKS:        ['T1', 'T2', 'T3', 'T4'],
+
+  TASK_LABELS: {
+    T1: 'Tarea 1',
+    T2: 'Tarea 2',
+    T3: 'Tarea 3',
+    T4: 'Tarea 4',
+    T5: 'Tarea 5',
+    S1: 'Sesión 1',
+    S2: 'Sesión 2',
+  },
+
+  TURNOS: { M: 'Turno Mañana', N: 'Turno Noche', T: 'Turno Tarde' },
+};
+/* ════════════════════════════════════════════════════════════════ */
+
+
+/* ── Inicializar textos ──────────────────────────────────────── */
+document.title                           = CONFIG.COURSE_NAME + ' — Notas';
+document.getElementById('hName').textContent = CONFIG.COURSE_NAME;
+document.getElementById('hSub').textContent  = CONFIG.SUBTITLE;
+
+
+/* ── Tema claro / oscuro ────────────────────────────────────── */
+const html   = document.documentElement;
+const tBtn   = document.getElementById('themeBtn');
+const tIcon  = document.getElementById('themeIcon');
+const tLbl   = document.getElementById('themeLbl');
+let dark = false;
+
+tBtn.addEventListener('click', () => {
+  dark = !dark;
+  html.setAttribute('data-theme', dark ? 'dark' : 'light');
+  tIcon.textContent = dark ? '☀️' : '🌙';
+  tLbl.textContent  = dark ? 'Modo claro' : 'Modo oscuro';
+});
+
+
+/* ── Búsqueda ───────────────────────────────────────────────── */
+const ciInput   = document.getElementById('ciInput');
+const searchBtn = document.getElementById('searchBtn');
+const loader    = document.getElementById('loader');
+const errMsg    = document.getElementById('errMsg');
+const resultsEl = document.getElementById('results');
+
+searchBtn.addEventListener('click', doSearch);
+ciInput.addEventListener('keydown', e => e.key === 'Enter' && doSearch());
+
+function doSearch() {
+  const ci = ciInput.value.trim();
+  if (!ci) { showErr('Ingresa tu CI para continuar.'); return; }
+
+  clearErr();
+  setLoading(true);
+  resultsEl.style.display = 'none';
+
+  queryBackend(ci)
+    .then(data => {
+      setLoading(false);
+      if (!data.success) {
+        showErr(data.error || 'No se encontraron resultados para este CI.');
+        return;
+      }
+      renderResults(data);
+    })
+    .catch(() => {
+      setLoading(false);
+      showErr('Error de conexión. Verifica que la URL del script sea correcta y esté publicada.');
+    });
+}
+
+
+/* ── Red: fetch con fallback JSONP ──────────────────────────── */
+function queryBackend(ci) {
+  const url = CONFIG.SCRIPT_URL
+    + '?ci='    + encodeURIComponent(ci)
+    + '&tasks=' + encodeURIComponent(CONFIG.TASKS.join(','));
+
+  return fetch(url, { redirect: 'follow' })
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .catch(() => jsonpFetch(url));   // fallback CORS-safe
+}
+
+function jsonpFetch(url) {
+  return new Promise((resolve, reject) => {
+    const cb = '_cb' + Date.now();
+    const s  = document.createElement('script');
+    window[cb]   = d  => { cleanup(); resolve(d); };
+    s.onerror    = () => { cleanup(); reject(new Error('jsonp')); };
+    s.src        = url + '&callback=' + cb;
+    document.head.appendChild(s);
+
+    function cleanup() { delete window[cb]; if (s.parentNode) s.remove(); }
+  });
+}
+
+
+/* ── Render ─────────────────────────────────────────────────── */
+function renderResults(data) {
+  // Iniciales del avatar
+  const initials = (data.nombre || '?')
+    .split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+
+  document.getElementById('sAvatar').textContent = initials;
+  document.getElementById('sName').textContent   = data.nombre || '—';
+  document.getElementById('sCI').textContent     = 'CI ' + data.ci;
+
+  const turnoEl = document.getElementById('sTurno');
+  const turnoTxt = CONFIG.TURNOS[String(data.turno).trim()] || data.turno;
+  if (turnoTxt) {
+    turnoEl.textContent    = turnoTxt;
+    turnoEl.style.display  = '';
+  } else {
+    turnoEl.style.display  = 'none';
+  }
+
+  // Tarjetas
+  const grid = document.getElementById('tasksGrid');
+  grid.innerHTML = '';
+  document.getElementById('fbPanel').classList.remove('on');
+
+  let firstCard = null;
+
+  CONFIG.TASKS.forEach(tid => {
+    const td   = data.tasks[tid];
+    const el   = makeCard(tid, td);
+    grid.appendChild(el);
+    if (!firstCard) firstCard = { tid, td, el };
+  });
+
+  resultsEl.style.display = 'block';
+
+  // Abrir feedback de la primera tarjeta automáticamente
+  if (firstCard) {
+    firstCard.el.classList.add('active');
+    showFeedback(firstCard.tid, firstCard.td);
+  }
+}
+
+
+/* ── Crear tarjeta de tarea ─────────────────────────────────── */
+function makeCard(tid, td) {
+  const label = CONFIG.TASK_LABELS[tid] || tid;
+  const card  = document.createElement('div');
+  card.className = 'task-card';
+
+  const found   = td && td.found;
+  const entrego = found && String(td.entrego || '').trim().toUpperCase() === 'SI';
+  const notaRaw = found ? td.nota : null;
+  const nota    = (notaRaw !== null && notaRaw !== '')
+                    ? parseFloat(String(notaRaw).replace(',', '.'))
+                    : NaN;
+
+  let gc, tint, statusClass, statusText, notaStr;
+
+  if (!entrego) {
+    gc = 'g-nil'; tint = 'var(--nil)';
+    statusClass = 's-no'; statusText = '✗ No entregado';
+    notaStr = '—';
+  } else {
+    statusClass = 's-ok'; statusText = '✓ Entregado';
+    if (isNaN(nota)) {
+      gc = 'g-nil'; tint = 'var(--nil)'; notaStr = '?';
+    } else if (nota >= 8) {
+      gc = 'g-ok';  tint = 'var(--ok)';
+      notaStr = fmtNota(nota);
+    } else if (nota >= 6) {
+      gc = 'g-mid'; tint = 'var(--mid)';
+      notaStr = fmtNota(nota);
+    } else {
+      gc = 'g-low'; tint = 'var(--low)';
+      notaStr = fmtNota(nota);
+    }
+  }
+
+  card.style.setProperty('--tint', tint);
+  card.innerHTML = `
+    <div class="t-label">${label}</div>
+    <div class="grade-ring ${gc}">${notaStr}</div>
+    <div class="t-status ${statusClass}">${statusText}</div>
+  `;
+
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.task-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    showFeedback(tid, td);
+  });
+
+  return card;
+}
+
+
+/* ── Mostrar feedback ───────────────────────────────────────── */
+function showFeedback(tid, td) {
+  const label  = CONFIG.TASK_LABELS[tid] || tid;
+  const panel  = document.getElementById('fbPanel');
+  const fbBody = document.getElementById('fbBody');
+
+  document.getElementById('fbTitle').textContent = 'Feedback — ' + label;
+
+  if (!td || !td.found) {
+    fbBody.className    = 'fb-body empty';
+    fbBody.textContent  = 'Sin registro de entrega para esta tarea.';
+  } else if (!td.feedback) {
+    fbBody.className    = 'fb-body empty';
+    fbBody.textContent  = 'Sin comentarios disponibles.';
+  } else {
+    fbBody.className    = 'fb-body';
+    fbBody.textContent  = td.feedback;
+  }
+
+  panel.classList.add('on');
+}
+
+
+/* ── Utilidades ─────────────────────────────────────────────── */
+function fmtNota(n) {
+  // Enteros sin decimales, decimales con coma (formato es-BO)
+  return n % 1 === 0
+    ? n.toString()
+    : n.toFixed(2).replace('.', ',');
+}
+
+function setLoading(on) {
+  loader.classList.toggle('on', on);
+  searchBtn.disabled = on;
+}
+
+function showErr(msg) {
+  errMsg.textContent = msg;
+  errMsg.classList.add('on');
+}
+
+function clearErr() {
+  errMsg.classList.remove('on');
+}
+
+</script>
+</body>
+</html>

@@ -1,607 +1,1474 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="light">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Consulta de Notas</title>
-<style>
 
-/* ──────────────────────────────────────────────────────────
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consulta de Calificaciones Multimateria</title>
+  <style>
+    /* ──────────────────────────────────────────────────────────
    VARIABLES DE TEMA
    ────────────────────────────────────────────────────────── */
-:root {
-  --accent:    #6366F1;
-  --accent-h:  #4F46E5;
-  --accent-bg: rgba(99,102,241,.10);
+    :root {
+      --accent: #6366F1;
+      --accent-h: #4F46E5;
+      --accent-bg: rgba(99, 102, 241, .10);
 
-  --bg:        #F1F5F9;
-  --surface:   #FFFFFF;
-  --surface2:  #F8FAFC;
-  --text:      #0F172A;
-  --muted:     #64748B;
-  --border:    #E2E8F0;
-  --shadow:    0 2px 16px rgba(15,23,42,.07);
-  --shadow-h:  0 8px 32px rgba(15,23,42,.15);
+      --bg: #F1F5F9;
+      --surface: #FFFFFF;
+      --surface2: #F8FAFC;
+      --text: #0F172A;
+      --muted: #64748B;
+      --border: #E2E8F0;
+      --shadow: 0 2px 16px rgba(15, 23, 42, .07);
+      --shadow-h: 0 8px 32px rgba(15, 23, 42, .15);
 
-  --ok:        #10B981;  --ok-bg:  rgba(16,185,129,.12);
-  --mid:       #F59E0B;  --mid-bg: rgba(245,158,11,.12);
-  --low:       #EF4444;  --low-bg: rgba(239,68,68,.12);
-  --nil:       #94A3B8;  --nil-bg: rgba(148,163,184,.12);
+      --ok: #10B981;
+      --ok-bg: rgba(16, 185, 129, .12);
+      --mid: #F59E0B;
+      --mid-bg: rgba(245, 158, 11, .12);
+      --low: #EF4444;
+      --low-bg: rgba(239, 68, 68, .12);
+      --info: #3B82F6;
+      --info-bg: rgba(59, 130, 246, .12);
+      --nil: #94A3B8;
+      --nil-bg: rgba(148, 163, 184, .12);
 
-  --r:  14px;
-  --tr: .25s ease;
-}
+      --r: 14px;
+      --tr: .25s ease;
+    }
 
-[data-theme="dark"] {
-  --bg:        #0F172A;
-  --surface:   #1E293B;
-  --surface2:  #162032;
-  --text:      #F1F5F9;
-  --muted:     #94A3B8;
-  --border:    #334155;
-  --shadow:    0 2px 16px rgba(0,0,0,.4);
-  --shadow-h:  0 8px 32px rgba(0,0,0,.6);
-}
+    [data-theme="dark"] {
+      --bg: #0F172A;
+      --surface: #1E293B;
+      --surface2: #162032;
+      --text: #F1F5F9;
+      --muted: #94A3B8;
+      --border: #334155;
+      --shadow: 0 2px 16px rgba(0, 0, 0, .4);
+      --shadow-h: 0 8px 32px rgba(0, 0, 0, .6);
+    }
 
-/* ──────────────────────────────────────────────────────────
-   RESET
+    /* ──────────────────────────────────────────────────────────
+   RESET & LAYOUT
    ────────────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-body {
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  transition: background var(--tr), color var(--tr);
-}
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background var(--tr), color var(--tr);
+    }
 
-button { font-family: inherit; cursor: pointer; }
-input  { font-family: inherit; }
+    button {
+      font-family: inherit;
+      cursor: pointer;
+    }
 
-/* ──────────────────────────────────────────────────────────
+    input,
+    select {
+      font-family: inherit;
+    }
+
+    /* ──────────────────────────────────────────────────────────
    HEADER
    ────────────────────────────────────────────────────────── */
-header {
-  position: sticky; top: 0; z-index: 100;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 13px 28px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  transition: background var(--tr), border-color var(--tr);
-}
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 28px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      transition: background var(--tr), border-color var(--tr);
+    }
 
-.brand { display: flex; align-items: center; gap: 11px; }
-.brand-icon {
-  width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
-  background: linear-gradient(135deg, var(--accent), #818CF8);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
-}
-.brand-text h1 { font-size: 15px; font-weight: 700; letter-spacing: -.2px; }
-.brand-text p  { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
 
-.theme-btn {
-  display: flex; align-items: center; gap: 7px;
-  padding: 7px 15px;
-  border: 1px solid var(--border); border-radius: 50px;
-  background: var(--surface2); color: var(--text);
-  font-size: 13px; font-weight: 500;
-  transition: all var(--tr);
-}
-.theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, var(--accent), #818CF8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
 
-/* ──────────────────────────────────────────────────────────
-   MAIN / LAYOUT
+    .brand-text h1 {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -.2px;
+    }
+
+    .brand-text p {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    .theme-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 15px;
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      transition: all var(--tr);
+    }
+
+    .theme-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ──────────────────────────────────────────────────────────
+   MAIN CONTAINER
    ────────────────────────────────────────────────────────── */
-main { max-width: 860px; margin: 0 auto; padding: 52px 24px 88px; }
+    main {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 42px 24px 88px;
+    }
 
-/* ──────────────────────────────────────────────────────────
-   SECCIÓN BÚSQUEDA
+    /* ──────────────────────────────────────────────────────────
+   BÚSQUEDA MULTIMATERIA
    ────────────────────────────────────────────────────────── */
-.search-wrap { text-align: center; padding-bottom: 48px; }
+    .search-wrap {
+      text-align: center;
+      padding-bottom: 36px;
+    }
 
-.search-wrap h2 {
-  font-size: 32px; font-weight: 800; letter-spacing: -.7px;
-  background: linear-gradient(135deg, var(--accent), #A78BFA);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 6px;
-}
-.search-wrap .sub { color: var(--muted); font-size: 15px; margin-bottom: 30px; }
+    .search-wrap h2 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -.7px;
+      background: linear-gradient(135deg, var(--accent), #A78BFA);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 6px;
+    }
 
-.search-row {
-  display: flex; gap: 10px;
-  max-width: 400px; margin: 0 auto;
-}
+    .search-wrap .sub {
+      color: var(--muted);
+      font-size: 15px;
+      margin-bottom: 26px;
+    }
 
-.search-row input {
-  flex: 1; padding: 13px 18px;
-  border: 2px solid var(--border); border-radius: var(--r);
-  font-size: 16px; background: var(--surface); color: var(--text);
-  outline: none; transition: border-color var(--tr), background var(--tr);
-}
-.search-row input:focus  { border-color: var(--accent); }
-.search-row input::placeholder { color: var(--muted); }
+    .search-box-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
 
-.btn-primary {
-  padding: 13px 22px;
-  background: var(--accent); color: #fff;
-  border: none; border-radius: var(--r);
-  font-size: 15px; font-weight: 600; white-space: nowrap;
-  transition: background var(--tr), transform .1s;
-}
-.btn-primary:hover   { background: var(--accent-h); }
-.btn-primary:active  { transform: scale(.97); }
-.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .materia-select {
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: var(--r);
+      font-size: 15px;
+      font-weight: 600;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      transition: border-color var(--tr);
+    }
 
-/* Loading */
-.loader {
-  display: none; align-items: center; justify-content: center;
-  gap: 9px; color: var(--muted); font-size: 14px; margin-top: 14px;
-}
-.loader.on { display: flex; }
-.spin {
-  width: 18px; height: 18px; border-radius: 50%;
-  border: 2px solid var(--border); border-top-color: var(--accent);
-  animation: spin .65s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+    .materia-select:focus {
+      border-color: var(--accent);
+    }
 
-/* Error */
-.err-msg {
-  display: none; margin-top: 13px; padding: 10px 16px;
-  background: rgba(239,68,68,.10); color: #EF4444;
-  border: 1px solid rgba(239,68,68,.25); border-radius: var(--r);
-  font-size: 14px;
-}
-.err-msg.on { display: inline-block; }
+    .search-row {
+      display: flex;
+      gap: 10px;
+    }
 
-/* ──────────────────────────────────────────────────────────
-   RESULTADOS
+    .search-row input {
+      flex: 1;
+      padding: 13px 18px;
+      border: 2px solid var(--border);
+      border-radius: var(--r);
+      font-size: 16px;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      transition: border-color var(--tr), background var(--tr);
+    }
+
+    .search-row input:focus {
+      border-color: var(--accent);
+    }
+
+    .search-row input::placeholder {
+      color: var(--muted);
+    }
+
+    .btn-primary {
+      padding: 13px 24px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--r);
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: background var(--tr), transform .1s;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-h);
+    }
+
+    .btn-primary:active {
+      transform: scale(.97);
+    }
+
+    .btn-primary:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    /* Loading & Message */
+    .loader {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 14px;
+    }
+
+    .loader.on {
+      display: flex;
+    }
+
+    .spin {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      animation: spin .65s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .err-msg {
+      display: none;
+      margin-top: 13px;
+      padding: 12px 18px;
+      background: rgba(239, 68, 68, .10);
+      color: #EF4444;
+      border: 1px solid rgba(239, 68, 68, .25);
+      border-radius: var(--r);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .err-msg.on {
+      display: block;
+    }
+
+    .inactive-banner {
+      display: none;
+      padding: 20px 24px;
+      text-align: center;
+      background: rgba(245, 158, 11, .12);
+      color: #D97706;
+      border: 1px solid rgba(245, 158, 11, .3);
+      border-radius: var(--r);
+      margin-bottom: 24px;
+      font-weight: 500;
+    }
+
+    .inactive-banner.on {
+      display: block;
+    }
+
+    /* ──────────────────────────────────────────────────────────
+   RESULTADOS DE ESTUDIANTE
    ────────────────────────────────────────────────────────── */
-#results { display: none; animation: fadeUp .4s ease; }
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+    #results {
+      display: none;
+      animation: fadeUp .4s ease;
+    }
 
-/* Tarjeta estudiante */
-.student-card {
-  display: flex; align-items: center; gap: 16px;
-  padding: 22px 24px; margin-bottom: 30px;
-  background: var(--surface);
-  border: 1px solid var(--border); border-radius: var(--r);
-  box-shadow: var(--shadow);
-}
-.s-avatar {
-  width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
-  background: linear-gradient(135deg, var(--accent), #818CF8);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; font-weight: 800; color: #fff;
-}
-.s-name { font-size: 18px; font-weight: 700; letter-spacing: -.3px; }
-.s-meta { display: flex; align-items: center; gap: 8px; margin-top: 5px; flex-wrap: wrap; }
-.tag {
-  font-size: 12px; font-weight: 600;
-  padding: 3px 11px; border-radius: 20px;
-  background: var(--accent-bg); color: var(--accent);
-}
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
 
-/* Etiqueta de sección */
-.sec-label {
-  font-size: 12px; font-weight: 700; letter-spacing: .8px;
-  text-transform: uppercase; color: var(--muted);
-  margin-bottom: 12px;
-}
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
-/* Grid de tareas */
-.tasks-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
-  gap: 12px;
-  margin-bottom: 20px;
-}
+    /* Tarjeta estudiante */
+    .student-card {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 22px 24px;
+      margin-bottom: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      flex-wrap: wrap;
+    }
 
-/* Tarjeta de tarea */
-.task-card {
-  background: var(--surface);
-  border: 2px solid var(--border); border-radius: var(--r);
-  padding: 18px 14px; text-align: center;
-  position: relative; overflow: hidden;
-  cursor: pointer; box-shadow: var(--shadow);
-  transition: transform var(--tr), box-shadow var(--tr), border-color var(--tr), background var(--tr);
-}
-/* Barra de color superior */
-.task-card::after {
-  content: ''; position: absolute; top: 0; left: 0; right: 0;
-  height: 3px; background: var(--tint, var(--nil));
-  transition: background var(--tr);
-}
-.task-card:hover  { transform: translateY(-3px); box-shadow: var(--shadow-h); }
-.task-card.active { border-color: var(--accent); background: var(--surface2); }
+    .s-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
 
-.t-label {
-  font-size: 11px; font-weight: 700; letter-spacing: .7px;
-  text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
-}
+    .s-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, var(--accent), #818CF8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+    }
 
-.grade-ring {
-  width: 64px; height: 64px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 10px;
-  font-size: 17px; font-weight: 800;
-  transition: background var(--tr), color var(--tr);
-}
-.g-ok  { background: var(--ok-bg);  color: var(--ok);  }
-.g-mid { background: var(--mid-bg); color: var(--mid); }
-.g-low { background: var(--low-bg); color: var(--low); }
-.g-nil { background: var(--nil-bg); color: var(--nil); }
+    .s-name {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -.3px;
+    }
 
-.t-status {
-  font-size: 12px; font-weight: 600;
-  display: flex; align-items: center; justify-content: center; gap: 4px;
-}
-.s-ok  { color: var(--ok);  }
-.s-no  { color: var(--nil); }
+    .s-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
 
-/* Panel de feedback */
-.feedback-panel {
-  display: none;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--accent);
-  border-radius: var(--r);
-  padding: 22px 26px;
-  box-shadow: var(--shadow);
-  animation: fadeUp .3s ease;
-}
-.feedback-panel.on { display: block; }
+    .tag {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: var(--accent-bg);
+      color: var(--accent);
+    }
 
-.fb-title {
-  font-size: 12px; font-weight: 700; letter-spacing: .6px;
-  text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
-}
-.fb-body {
-  line-height: 1.78; font-size: 15px; color: var(--text);
-}
-.fb-body.empty { color: var(--muted); font-style: italic; }
+    .tag-ok {
+      background: var(--ok-bg);
+      color: var(--ok);
+    }
 
-/* ──────────────────────────────────────────────────────────
-   RESPONSIVE
+    .tag-mid {
+      background: var(--mid-bg);
+      color: var(--mid);
+    }
+
+    /* Badges de Acumulado, Proyecto y Grupo */
+    .extra-info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .info-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 14px 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .info-box-lbl {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .6px;
+    }
+
+    .info-box-val {
+      font-size: 15px;
+      font-weight: 700;
+      margin-top: 4px;
+      color: var(--text);
+    }
+
+    /* Sección Asistencia por Rango de Columnas */
+    .attendance-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .att-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .att-stats {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .att-stat-item {
+      text-align: center;
+      min-width: 65px;
+    }
+
+    .att-stat-num {
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .att-stat-num.ok {
+      color: var(--ok);
+    }
+
+    .att-stat-num.low {
+      color: var(--low);
+    }
+
+    .att-stat-num.mid {
+      color: var(--mid);
+    }
+
+    .att-stat-num.info {
+      color: var(--info);
+    }
+
+    .att-stat-lbl {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    /* Grid de Sesiones de Asistencia */
+    .att-sesiones-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .att-sesion-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .att-s-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .att-s-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 12px;
+    }
+
+    .att-s-badge.ok {
+      background: var(--ok-bg);
+      color: var(--ok);
+    }
+
+    .att-s-badge.low {
+      background: var(--low-bg);
+      color: var(--low);
+    }
+
+    .att-s-badge.mid {
+      background: var(--mid-bg);
+      color: var(--mid);
+    }
+
+    .att-s-badge.info {
+      background: var(--info-bg);
+      color: var(--info);
+    }
+
+    .att-s-badge.nil {
+      background: var(--nil-bg);
+      color: var(--nil);
+    }
+
+    .att-s-badge.custom {
+      background: var(--accent-bg);
+      color: var(--accent);
+    }
+
+    /* Grid de tareas */
+    .sec-label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .tasks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .task-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px 12px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: transform var(--tr), box-shadow var(--tr), border-color var(--tr), background var(--tr);
+    }
+
+    .task-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--tint, var(--nil));
+      transition: background var(--tr);
+    }
+
+    .task-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-h);
+    }
+
+    .task-card.active {
+      border-color: var(--accent);
+      background: var(--surface2);
+    }
+
+    .t-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .grade-ring {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 8px;
+      font-size: 16px;
+      font-weight: 800;
+      transition: background var(--tr), color var(--tr);
+    }
+
+    .g-ok {
+      background: var(--ok-bg);
+      color: var(--ok);
+    }
+
+    .g-mid {
+      background: var(--mid-bg);
+      color: var(--mid);
+    }
+
+    .g-low {
+      background: var(--low-bg);
+      color: var(--low);
+    }
+
+    .g-nil {
+      background: var(--nil-bg);
+      color: var(--nil);
+    }
+
+    .t-status {
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .s-ok {
+      color: var(--ok);
+    }
+
+    .s-no {
+      color: var(--nil);
+    }
+
+    /* Panel de feedback */
+    .feedback-panel {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: var(--r);
+      padding: 22px 26px;
+      box-shadow: var(--shadow);
+      animation: fadeUp .3s ease;
+    }
+
+    .feedback-panel.on {
+      display: block;
+    }
+
+    .fb-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .fb-body {
+      line-height: 1.78;
+      font-size: 15px;
+      color: var(--text);
+    }
+
+    .fb-body.empty {
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    /* ──────────────────────────────────────────────────────────
+   PANEL DE ADMINISTRACIÓN MULTIMATERIA
    ────────────────────────────────────────────────────────── */
-@media (max-width: 540px) {
-  header { padding: 12px 16px; }
-  .brand-text p { display: none; }
-  main { padding: 32px 16px 64px; }
-  .search-wrap h2 { font-size: 24px; }
-  .search-row { flex-direction: column; }
-  .tasks-grid { grid-template-columns: repeat(2, 1fr); }
-  .student-card { padding: 16px; }
-  .s-name { font-size: 15px; }
-}
+    #adminPanel {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 28px;
+      box-shadow: var(--shadow-h);
+      animation: fadeUp .4s ease;
+      margin-top: 20px;
+    }
 
-</style>
+    #adminPanel.on {
+      display: block;
+    }
+
+    .admin-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+
+    .admin-header h3 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .admin-sec-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      margin: 20px 0 12px;
+    }
+
+    .materia-card-admin {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: var(--accent);
+    }
+
+    .admin-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 24px;
+    }
+
+    .btn-success {
+      padding: 12px 24px;
+      background: var(--ok);
+      color: #fff;
+      border: none;
+      border-radius: var(--r);
+      font-weight: 700;
+      font-size: 15px;
+      transition: background var(--tr);
+    }
+
+    .btn-success:hover {
+      opacity: .9;
+    }
+
+    .btn-secondary {
+      padding: 12px 24px;
+      background: var(--accent-bg);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      border-radius: var(--r);
+      font-weight: 700;
+      font-size: 15px;
+      transition: all var(--tr);
+    }
+
+    .btn-secondary:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* Responsive */
+    @media (max-width: 540px) {
+      header {
+        padding: 12px 16px;
+      }
+
+      .brand-text p {
+        display: none;
+      }
+
+      main {
+        padding: 24px 16px 64px;
+      }
+
+      .search-wrap h2 {
+        font-size: 24px;
+      }
+
+      .search-box-wrap {
+        width: 100%;
+      }
+
+      .search-row {
+        flex-direction: column;
+      }
+
+      .tasks-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .student-card {
+        padding: 16px;
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- ═══════════════════════════ HEADER ═══════════════════════════ -->
-<header>
-  <div class="brand">
-    <div class="brand-icon">📚</div>
-    <div class="brand-text">
-      <h1 id="hName">Cargando…</h1>
-      <p  id="hSub"></p>
-    </div>
-  </div>
-  <button class="theme-btn" id="themeBtn">
-    <span id="themeIcon">🌙</span>
-    <span id="themeLbl">Modo oscuro</span>
-  </button>
-</header>
-
-<!-- ═══════════════════════════ MAIN ════════════════════════════ -->
-<main>
-
-  <!-- Búsqueda -->
-  <div class="search-wrap">
-    <h2>Consulta tus notas</h2>
-    <p class="sub">Ingresa tu número de Cédula de Identidad</p>
-    <div class="search-row">
-      <input id="ciInput" type="text" placeholder="Ej. 12394409"
-             inputmode="numeric" maxlength="12" autocomplete="off">
-      <button class="btn-primary" id="searchBtn">Buscar</button>
-    </div>
-    <div class="loader"   id="loader"><div class="spin"></div>Buscando…</div>
-    <div class="err-msg"  id="errMsg"></div>
-  </div>
-
-  <!-- Resultados -->
-  <section id="results">
-
-    <!-- Info estudiante -->
-    <div class="student-card">
-      <div class="s-avatar" id="sAvatar">?</div>
-      <div>
-        <div class="s-name" id="sName">—</div>
-        <div class="s-meta">
-          <span class="tag" id="sTurno" style="display:none"></span>
-          <span class="tag" id="sCI"></span>
-        </div>
+  <!-- ═══════════════════════════ HEADER ═══════════════════════════ -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">📚</div>
+      <div class="brand-text">
+        <h1 id="hName">Consulta de Calificaciones</h1>
+        <p id="hSub">Sistema Multimateria · 2026</p>
       </div>
     </div>
+    <button class="theme-btn" id="themeBtn">
+      <span id="themeIcon">🌙</span>
+      <span id="themeLbl">Modo oscuro</span>
+    </button>
+  </header>
 
-    <!-- Tarjetas de tareas -->
-    <div class="sec-label">Calificaciones por tarea</div>
-    <div class="tasks-grid" id="tasksGrid"></div>
+  <!-- ═══════════════════════════ MAIN ════════════════════════════ -->
+  <main>
 
-    <!-- Feedback -->
-    <div class="feedback-panel" id="fbPanel">
-      <div class="fb-title" id="fbTitle">Feedback</div>
-      <p class="fb-body"    id="fbBody"></p>
+    <!-- Banner de inactividad -->
+    <div class="inactive-banner" id="inactiveBanner"></div>
+
+    <!-- Búsqueda -->
+    <div class="search-wrap">
+      <h2>Consulta tus notas</h2>
+      <p class="sub">Selecciona tu materia e ingresa tu Cédula de Identidad</p>
+
+      <div class="search-box-wrap">
+        <select class="materia-select" id="materiaSelect">
+          <option value="ALL">🔍 Buscar en Todas mis Materias</option>
+        </select>
+        <div class="search-row">
+          <input id="ciInput" type="text" placeholder="Ej. 12345678" inputmode="numeric" maxlength="15"
+            autocomplete="off">
+          <button class="btn-primary" id="searchBtn">Buscar</button>
+        </div>
+      </div>
+
+      <div class="loader" id="loader">
+        <div class="spin"></div>Buscando en el sistema…
+      </div>
+      <div class="err-msg" id="errMsg"></div>
     </div>
 
-  </section>
-</main>
+    <!-- Panel Admin (Desbloqueado al ingresar CI de Admin) -->
+    <section id="adminPanel">
+      <div class="admin-header">
+        <h3>⚙️ Panel de Configuración Multimateria (Admin)</h3>
+        <span class="tag tag-ok">Modo Administrador</span>
+      </div>
 
-<script>
-/* ════════════════════════════════════════════════════════════════
-   CONFIGURACIÓN — EDITA ESTAS CONSTANTES PARA CADA MATERIA
-   ════════════════════════════════════════════════════════════════
+      <!-- Ajustes Globales -->
+      <div class="admin-sec-title">Ajustes Generales del Sistema</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Título de la Aplicación</label>
+          <input id="admCourseName" type="text" placeholder="Ej. Sistema Consulta Calificaciones">
+        </div>
+        <div class="form-group">
+          <label>Subtítulo Principal</label>
+          <input id="admSubtitle" type="text" placeholder="Ej. Selecciona tu materia...">
+        </div>
+        <div class="form-group">
+          <label>CI del Administrador</label>
+          <input id="admAdminCi" type="text" placeholder="Ej. 12345678">
+        </div>
+        <div class="form-group">
+          <label>Estado de la Aplicación</label>
+          <select id="admAppActive">
+            <option value="SI">Activo (Estudiantes pueden consultar)</option>
+            <option value="NO">Inactivo (Mantenimiento / Deshabilitado)</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Mensaje en Inactividad</label>
+          <input id="admInactiveMsg" type="text" placeholder="Mensaje de mantenimiento...">
+        </div>
+      </div>
 
-   SCRIPT_URL : URL del Web App de Apps Script (desplegado como
-                "Aplicación web" con acceso "Todos")
-   TASKS      : Array con los nombres EXACTOS de las hojas
-                de tareas en el Google Sheet (ej. ['T1','T2','T3'])
-   TASK_LABELS: Nombre descriptivo para cada hoja (opcional)
-   COURSE_NAME: Nombre de la materia que aparece en el header
-   SUBTITLE   : Subtítulo del header
+      <!-- Gestión de Materias Registradas -->
+      <div class="admin-sec-title">Catálogo de Materias Registradas</div>
+      <div id="materiasAdminContainer"></div>
 
-   ════════════════════════════════════════════════════════════════ */
-const CONFIG = {
-  COURSE_NAME:  'IA y Nuevas Narrativas',
-  SUBTITLE:     'Consulta de calificaciones · 2026',
+      <div class="admin-actions">
+        <button class="btn-success" id="saveAdminBtn">💾 Guardar Configuración Multimateria</button>
+        <button class="btn-secondary" id="initDataBtn">🚀 Generar Estructura y Datos de Prueba en Sheet</button>
+      </div>
+    </section>
 
-  SCRIPT_URL:   'https://script.google.com/macros/s/AKfycbw6-l49UgIZDPS6mKGqli-7vxKg-1fcvbqBL6ccjzaLKrdbPCniOVOoi4kpMvGplvNg/exec',
+    <!-- Resultados de Estudiante -->
+    <section id="results">
 
-  TASKS:        ['T1', 'T2', 'T3', 'T4'],
+      <!-- Tarjeta estudiante -->
+      <div class="student-card">
+        <div class="s-header">
+          <div class="s-avatar" id="sAvatar">?</div>
+          <div>
+            <div class="s-name" id="sName">—</div>
+            <div class="s-meta">
+              <span class="tag" id="sCI"></span>
+              <span class="tag" id="sTurno"></span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-  TASK_LABELS: {
-    T1: 'Tarea 1',
-    T2: 'Tarea 2',
-    T3: 'Tarea 3',
-    T4: 'Tarea 4',
-    T5: 'Tarea 5',
-    S1: 'Sesión 1',
-    S2: 'Sesión 2',
-  },
+      <!-- Cajas de Información Adicional (Proyecto, Grupo, Acumulado) -->
+      <div class="extra-info-grid">
+        <div class="info-box">
+          <div class="info-box-lbl">Proyecto Final Asignado</div>
+          <div class="info-box-val" id="sProyecto">—</div>
+        </div>
+        <div class="info-box">
+          <div class="info-box-lbl">Grupo de Trabajo</div>
+          <div class="info-box-val" id="sGrupo">—</div>
+        </div>
+        <div class="info-box">
+          <div class="info-box-lbl">Puntaje Acumulado (Tareas)</div>
+          <div class="info-box-val" style="color: var(--accent);" id="sAcumulado">0 pts</div>
+        </div>
+      </div>
 
-  TURNOS: { M: 'Turno Mañana', N: 'Turno Noche', T: 'Turno Tarde' },
-};
-/* ════════════════════════════════════════════════════════════════ */
+      <!-- Tarjeta de Asistencia por Rango de Columnas -->
+      <div class="attendance-card">
+        <div class="att-top-row">
+          <div>
+            <div class="sec-label" style="margin:0 0 4px;">Control de Asistencia por Sesión</div>
+            <div style="font-size: 13px; color: var(--muted);">Registro detallado por fecha / columna</div>
+          </div>
+          <div class="att-stats">
+            <div class="att-stat-item">
+              <div class="att-stat-num ok" id="attPresencias">0</div>
+              <div class="att-stat-lbl">Asistencias</div>
+            </div>
+            <div class="att-stat-item">
+              <div class="att-stat-num low" id="attFaltas">0</div>
+              <div class="att-stat-lbl">Faltas</div>
+            </div>
+          </div>
+        </div>
 
+        <div class="att-sesiones-grid" id="attSesionesGrid"></div>
+      </div>
 
-/* ── Inicializar textos ──────────────────────────────────────── */
-document.title                           = CONFIG.COURSE_NAME + ' — Notas';
-document.getElementById('hName').textContent = CONFIG.COURSE_NAME;
-document.getElementById('hSub').textContent  = CONFIG.SUBTITLE;
+      <!-- Tarjetas de tareas (1..N) -->
+      <div class="sec-label">Calificaciones por Tarea</div>
+      <div class="tasks-grid" id="tasksGrid"></div>
 
+      <!-- Feedback -->
+      <div class="feedback-panel" id="fbPanel">
+        <div class="fb-title" id="fbTitle">Feedback</div>
+        <p class="fb-body" id="fbBody"></p>
+      </div>
 
-/* ── Tema claro / oscuro ────────────────────────────────────── */
-const html   = document.documentElement;
-const tBtn   = document.getElementById('themeBtn');
-const tIcon  = document.getElementById('themeIcon');
-const tLbl   = document.getElementById('themeLbl');
-let dark = false;
+    </section>
+  </main>
 
-tBtn.addEventListener('click', () => {
-  dark = !dark;
-  html.setAttribute('data-theme', dark ? 'dark' : 'light');
-  tIcon.textContent = dark ? '☀️' : '🌙';
-  tLbl.textContent  = dark ? 'Modo claro' : 'Modo oscuro';
-});
+  <script>
+    /* ════════════════════════════════════════════════════════════════
+       CONFIGURACIÓN INICIAL Y BACKEND SCRIPT_URL
+       ════════════════════════════════════════════════════════════════ */
+    const CONFIG = {
+      SCRIPT_URL: 'https://script.google.com/macros/s/AKfycby38_nLitSCKRxGmoCx0NlRXytec5npQ9ZecYtdKctX3hoByTJ1qxuOXzWn7-IGtnKsfQ/exec',
+      TASK_LABELS: {
+        T1: 'Tarea 1', T2: 'Tarea 2', T3: 'Tarea 3', T4: 'Tarea 4',
+        T5: 'Tarea 5', T6: 'Tarea 6', T7: 'Tarea 7', T8: 'Tarea 8',
+        S1: 'Sesión 1', S2: 'Sesión 2'
+      },
+      TURNOS: { M: 'Turno Mañana', N: 'Turno Noche', T: 'Turno Tarde' }
+    };
 
+    let currentAdminCi = '';
+    let currentMateriasList = [];
 
-/* ── Búsqueda ───────────────────────────────────────────────── */
-const ciInput   = document.getElementById('ciInput');
-const searchBtn = document.getElementById('searchBtn');
-const loader    = document.getElementById('loader');
-const errMsg    = document.getElementById('errMsg');
-const resultsEl = document.getElementById('results');
+    /* ── Cargar Lista de Materias y Configuración Inicial ─────────── */
+    function fetchAppConfig() {
+      const url = CONFIG.SCRIPT_URL + '?action=getMaterias';
+      jsonpFetch(url).then(data => {
+        if (data && data.success) {
+          if (data.courseName) document.getElementById('hName').textContent = data.courseName;
+          if (data.subtitle) document.getElementById('hSub').textContent = data.subtitle;
 
-searchBtn.addEventListener('click', doSearch);
-ciInput.addEventListener('keydown', e => e.key === 'Enter' && doSearch());
+          const banner = document.getElementById('inactiveBanner');
+          if (data.active === false) {
+            banner.textContent = data.inactiveMsg || 'El sistema se encuentra deshabilitado temporalmente.';
+            banner.classList.add('on');
+          } else {
+            banner.classList.remove('on');
+          }
 
-function doSearch() {
-  const ci = ciInput.value.trim();
-  if (!ci) { showErr('Ingresa tu CI para continuar.'); return; }
-
-  clearErr();
-  setLoading(true);
-  resultsEl.style.display = 'none';
-
-  queryBackend(ci)
-    .then(data => {
-      setLoading(false);
-      if (!data.success) {
-        showErr(data.error || 'No se encontraron resultados para este CI.');
-        return;
-      }
-      renderResults(data);
-    })
-    .catch(() => {
-      setLoading(false);
-      showErr('Error de conexión. Verifica que la URL del script sea correcta y esté publicada.');
-    });
-}
-
-
-/* ── Red: fetch con fallback JSONP ──────────────────────────── */
-function queryBackend(ci) {
-  const url = CONFIG.SCRIPT_URL
-    + '?ci='    + encodeURIComponent(ci)
-    + '&tasks=' + encodeURIComponent(CONFIG.TASKS.join(','));
-
-  return fetch(url, { redirect: 'follow' })
-    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .catch(() => jsonpFetch(url));   // fallback CORS-safe
-}
-
-function jsonpFetch(url) {
-  return new Promise((resolve, reject) => {
-    const cb = '_cb' + Date.now();
-    const s  = document.createElement('script');
-    window[cb]   = d  => { cleanup(); resolve(d); };
-    s.onerror    = () => { cleanup(); reject(new Error('jsonp')); };
-    s.src        = url + '&callback=' + cb;
-    document.head.appendChild(s);
-
-    function cleanup() { delete window[cb]; if (s.parentNode) s.remove(); }
-  });
-}
-
-
-/* ── Render ─────────────────────────────────────────────────── */
-function renderResults(data) {
-  // Iniciales del avatar
-  const initials = (data.nombre || '?')
-    .split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
-
-  document.getElementById('sAvatar').textContent = initials;
-  document.getElementById('sName').textContent   = data.nombre || '—';
-  document.getElementById('sCI').textContent     = 'CI ' + data.ci;
-
-  const turnoEl = document.getElementById('sTurno');
-  const turnoTxt = CONFIG.TURNOS[String(data.turno).trim()] || data.turno;
-  if (turnoTxt) {
-    turnoEl.textContent    = turnoTxt;
-    turnoEl.style.display  = '';
-  } else {
-    turnoEl.style.display  = 'none';
-  }
-
-  // Tarjetas
-  const grid = document.getElementById('tasksGrid');
-  grid.innerHTML = '';
-  document.getElementById('fbPanel').classList.remove('on');
-
-  let firstCard = null;
-
-  CONFIG.TASKS.forEach(tid => {
-    const td   = data.tasks[tid];
-    const el   = makeCard(tid, td);
-    grid.appendChild(el);
-    if (!firstCard) firstCard = { tid, td, el };
-  });
-
-  resultsEl.style.display = 'block';
-
-  // Abrir feedback de la primera tarjeta automáticamente
-  if (firstCard) {
-    firstCard.el.classList.add('active');
-    showFeedback(firstCard.tid, firstCard.td);
-  }
-}
-
-
-/* ── Crear tarjeta de tarea ─────────────────────────────────── */
-function makeCard(tid, td) {
-  const label = CONFIG.TASK_LABELS[tid] || tid;
-  const card  = document.createElement('div');
-  card.className = 'task-card';
-
-  const found   = td && td.found;
-  const entrego = found && String(td.entrego || '').trim().toUpperCase() === 'SI';
-  const notaRaw = found ? td.nota : null;
-  const nota    = (notaRaw !== null && notaRaw !== '')
-                    ? parseFloat(String(notaRaw).replace(',', '.'))
-                    : NaN;
-
-  let gc, tint, statusClass, statusText, notaStr;
-
-  if (!entrego) {
-    gc = 'g-nil'; tint = 'var(--nil)';
-    statusClass = 's-no'; statusText = '✗ No entregado';
-    notaStr = '—';
-  } else {
-    statusClass = 's-ok'; statusText = '✓ Entregado';
-    if (isNaN(nota)) {
-      gc = 'g-nil'; tint = 'var(--nil)'; notaStr = '?';
-    } else if (nota >= 8) {
-      gc = 'g-ok';  tint = 'var(--ok)';
-      notaStr = fmtNota(nota);
-    } else if (nota >= 6) {
-      gc = 'g-mid'; tint = 'var(--mid)';
-      notaStr = fmtNota(nota);
-    } else {
-      gc = 'g-low'; tint = 'var(--low)';
-      notaStr = fmtNota(nota);
+          if (data.materias && Array.isArray(data.materias)) {
+            populateMateriaSelect(data.materias);
+          }
+        }
+      }).catch(() => {
+        document.getElementById('hName').textContent = 'Consulta de Notas';
+      });
     }
-  }
 
-  card.style.setProperty('--tint', tint);
-  card.innerHTML = `
+    function populateMateriaSelect(materias) {
+      const select = document.getElementById('materiaSelect');
+      select.innerHTML = '<option value="ALL">🔍 Buscar en Todas mis Materias</option>';
+      materias.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.id;
+        opt.textContent = '📖 ' + m.nombre;
+        select.appendChild(opt);
+      });
+    }
+
+    fetchAppConfig();
+
+    /* ── Tema claro / oscuro ────────────────────────────────────── */
+    const html = document.documentElement;
+    const tBtn = document.getElementById('themeBtn');
+    const tIcon = document.getElementById('themeIcon');
+    const tLbl = document.getElementById('themeLbl');
+    let dark = false;
+
+    tBtn.addEventListener('click', () => {
+      dark = !dark;
+      html.setAttribute('data-theme', dark ? 'dark' : 'light');
+      tIcon.textContent = dark ? '☀️' : '🌙';
+      tLbl.textContent = dark ? 'Modo claro' : 'Modo oscuro';
+    });
+
+    /* ── Búsqueda ───────────────────────────────────────────────── */
+    const ciInput = document.getElementById('ciInput');
+    const materiaSelect = document.getElementById('materiaSelect');
+    const searchBtn = document.getElementById('searchBtn');
+    const loader = document.getElementById('loader');
+    const errMsg = document.getElementById('errMsg');
+    const resultsEl = document.getElementById('results');
+    const adminPanel = document.getElementById('adminPanel');
+
+    searchBtn.addEventListener('click', doSearch);
+    ciInput.addEventListener('keydown', e => e.key === 'Enter' && doSearch());
+
+    function doSearch() {
+      const ci = ciInput.value.trim();
+      const materiaId = materiaSelect.value;
+
+      if (!ci) { showErr('Ingresa tu carnet de identidad para continuar.'); return; }
+
+      clearErr();
+      setLoading(true);
+      resultsEl.style.display = 'none';
+      adminPanel.classList.remove('on');
+
+      queryBackend(ci, materiaId)
+        .then(data => {
+          setLoading(false);
+          if (data.isAdmin) {
+            renderAdminPanel(data.config, data.materias, ci);
+            return;
+          }
+          if (!data.success) {
+            showErr(data.error || 'No se encontraron resultados para este CI.');
+            return;
+          }
+          renderResults(data);
+        })
+        .catch(() => {
+          setLoading(false);
+          showErr('Error de conexión. Verifica que la URL del script esté configurada y publicada.');
+        });
+    }
+
+    function queryBackend(ci, materiaId) {
+      const url = CONFIG.SCRIPT_URL + '?ci=' + encodeURIComponent(ci) + '&materiaId=' + encodeURIComponent(materiaId || 'ALL');
+      return jsonpFetch(url);
+    }
+
+    function jsonpFetch(url) {
+      return new Promise((resolve, reject) => {
+        const cb = '_cb' + Date.now();
+        const s = document.createElement('script');
+        window[cb] = d => { cleanup(); resolve(d); };
+        s.onerror = () => { cleanup(); reject(new Error('jsonp')); };
+        s.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
+        document.head.appendChild(s);
+
+        function cleanup() { delete window[cb]; if (s.parentNode) s.remove(); }
+      });
+    }
+
+    /* ── Render Panel Admin ─────────────────────────────────────── */
+    function renderAdminPanel(cfg, materias, adminCi) {
+      currentAdminCi = adminCi;
+      currentMateriasList = materias || [];
+      adminPanel.classList.add('on');
+
+      document.getElementById('admCourseName').value = cfg.COURSE_NAME || '';
+      document.getElementById('admSubtitle').value = cfg.SUBTITLE || '';
+      document.getElementById('admAdminCi').value = cfg.ADMIN_CI || '';
+      document.getElementById('admAppActive').value = cfg.APP_ACTIVE || 'SI';
+      document.getElementById('admInactiveMsg').value = cfg.INACTIVE_MSG || '';
+
+      renderMateriasAdminEditor(currentMateriasList);
+    }
+
+    function renderMateriasAdminEditor(materias) {
+      const container = document.getElementById('materiasAdminContainer');
+      container.innerHTML = '';
+
+      materias.forEach((m, idx) => {
+        const card = document.createElement('div');
+        card.className = 'materia-card-admin';
+        card.innerHTML = `
+      <div style="font-size:14px; font-weight:800; color:var(--accent); margin-bottom:10px;">📖 Materia ${idx + 1}: ${m.NOMBRE_MATERIA || m.ID_MATERIA}</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>ID Materia</label>
+          <input type="text" data-key="ID_MATERIA" value="${m.ID_MATERIA || ''}">
+        </div>
+        <div class="form-group">
+          <label>Nombre de la Materia</label>
+          <input type="text" data-key="NOMBRE_MATERIA" value="${m.NOMBRE_MATERIA || ''}">
+        </div>
+        <div class="form-group full">
+          <label>ID o URL Google Sheet Remota</label>
+          <input type="text" data-key="SPREADSHEET_ID" value="${m.SPREADSHEET_ID || ''}" placeholder="Dejar vacío para usar la hoja local">
+        </div>
+        <div class="form-group">
+          <label>Pestaña Estudiantes</label>
+          <input type="text" data-key="PESTAÑA_ESTUDIANTES" value="${m.PESTAÑA_ESTUDIANTES || 'Estudiantes'}">
+        </div>
+        <div class="form-group full">
+          <label>Pestañas Tareas (separadas por coma)</label>
+          <input type="text" data-key="PESTAÑAS_TAREAS" value="${m.PESTAÑAS_TAREAS || 'T1,T2,T3,T4,T5,T6,T7,T8'}">
+        </div>
+        <div class="form-group">
+          <label>Pestaña Asistencia</label>
+          <input type="text" data-key="PESTAÑA_ASISTENCIA" value="${m.PESTAÑA_ASISTENCIA || 'Asistencia'}">
+        </div>
+        <div class="form-group">
+          <label>Col. Inicio Asistencia</label>
+          <input type="text" data-key="COL_ATT_START" value="${m.COL_ATT_START || 'E'}">
+        </div>
+        <div class="form-group">
+          <label>Col. Fin Asistencia</label>
+          <input type="text" data-key="COL_ATT_END" value="${m.COL_ATT_END || 'N'}">
+        </div>
+      </div>
+    `;
+        container.appendChild(card);
+      });
+    }
+
+    document.getElementById('saveAdminBtn').addEventListener('click', () => {
+      const newCfgGlobal = {
+        COURSE_NAME: document.getElementById('admCourseName').value,
+        SUBTITLE: document.getElementById('admSubtitle').value,
+        ADMIN_CI: document.getElementById('admAdminCi').value,
+        APP_ACTIVE: document.getElementById('admAppActive').value,
+        INACTIVE_MSG: document.getElementById('admInactiveMsg').value,
+      };
+
+      const cards = document.querySelectorAll('.materia-card-admin');
+      const newMaterias = [];
+
+      cards.forEach(card => {
+        const m = {};
+        card.querySelectorAll('input').forEach(input => {
+          m[input.getAttribute('data-key')] = input.value.trim();
+        });
+        newMaterias.push(m);
+      });
+
+      const btn = document.getElementById('saveAdminBtn');
+      btn.disabled = true;
+      btn.textContent = 'Guardando…';
+
+      fetch(CONFIG.SCRIPT_URL, {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ adminCi: currentAdminCi, newConfigGlobal: newCfgGlobal, materias: newMaterias })
+      })
+        .then(r => r.json())
+        .then(res => {
+          btn.disabled = false;
+          btn.textContent = '💾 Guardar Configuración Multimateria';
+          if (res.success) {
+            alert('¡Configuración multimateria guardada exitosamente!');
+            fetchAppConfig();
+          } else {
+            alert('Error al guardar: ' + (res.error || 'Desconocido'));
+          }
+        })
+        .catch(err => {
+          btn.disabled = false;
+          btn.textContent = '💾 Guardar Configuración Multimateria';
+          alert('Error al enviar configuración al backend: ' + err);
+        });
+    });
+
+    document.getElementById('initDataBtn').addEventListener('click', () => {
+      if (!confirm('¿Deseas inicializar la hoja con las pestañas de materias, 8 tareas y asistencia por rango de prueba?')) return;
+      const btn = document.getElementById('initDataBtn');
+      btn.disabled = true;
+      btn.textContent = 'Generando…';
+
+      fetch(CONFIG.SCRIPT_URL, {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ adminCi: currentAdminCi, action: 'initData' })
+      })
+        .then(r => r.json())
+        .then(res => {
+          btn.disabled = false;
+          btn.textContent = '🚀 Generar Estructura y Datos de Prueba en Sheet';
+          if (res.success) {
+            alert(res.message || '¡Inicialización completada!');
+            fetchAppConfig();
+          } else {
+            alert('Error: ' + (res.error || 'No se pudo inicializar.'));
+          }
+        })
+        .catch(err => {
+          btn.disabled = false;
+          btn.textContent = '🚀 Generar Estructura y Datos de Prueba en Sheet';
+          alert('Error de red: ' + err);
+        });
+    });
+
+    /* ── Render Resultados Estudiante ───────────────────────────── */
+    function renderResults(data) {
+      if (data.courseName) document.getElementById('hName').textContent = data.courseName;
+      if (data.subtitle) document.getElementById('hSub').textContent = data.subtitle;
+
+      const initials = (data.nombre || '?')
+        .split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+
+      document.getElementById('sAvatar').textContent = initials;
+      document.getElementById('sName').textContent = data.nombre || '—';
+      document.getElementById('sCI').textContent = 'CI ' + data.ci;
+
+      const turnoTxt = CONFIG.TURNOS[String(data.turno).trim()] || data.turno;
+      document.getElementById('sTurno').textContent = turnoTxt ? turnoTxt : 'Turno no especificado';
+
+      document.getElementById('sProyecto').textContent = data.proyecto || 'Sin proyecto asignado';
+      document.getElementById('sGrupo').textContent = data.grupo ? (String(data.grupo).toLowerCase().includes('grupo') ? data.grupo : 'Grupo ' + data.grupo) : 'Sin grupo';
+
+      const acumTxt = (data.acumulado !== undefined ? data.acumulado : 0) + (data.acumuladoMaximo ? (' / ' + data.acumuladoMaximo + ' pts') : ' pts');
+      document.getElementById('sAcumulado').textContent = acumTxt;
+
+      // Asistencia por Rango de Columnas
+      const gridAtt = document.getElementById('attSesionesGrid');
+      gridAtt.innerHTML = '';
+
+      if (data.asistencia && data.asistencia.found) {
+        if (document.getElementById('attPresencias')) document.getElementById('attPresencias').textContent = data.asistencia.presencias || 0;
+        if (document.getElementById('attFaltas')) document.getElementById('attFaltas').textContent = data.asistencia.faltas || 0;
+
+        if (data.asistencia.sesiones && Array.isArray(data.asistencia.sesiones)) {
+          data.asistencia.sesiones.forEach(s => {
+            const card = document.createElement('div');
+            card.className = 'att-sesion-card';
+
+            let labelText = s.estado;
+            if (s.estado === 'PRESENTE') labelText = '✓ Presente';
+            else if (s.estado === 'FALTA') labelText = '✗ Falta';
+            else if (s.estado === 'SIN_REGISTRO') labelText = '—';
+
+            card.innerHTML = `
+          <div class="att-s-title" title="${s.titulo}">${s.titulo}</div>
+          <div class="att-s-badge ${s.cssClass}">${labelText}</div>
+        `;
+            gridAtt.appendChild(card);
+          });
+        }
+      } else {
+        if (document.getElementById('attPresencias')) document.getElementById('attPresencias').textContent = '—';
+        if (document.getElementById('attFaltas')) document.getElementById('attFaltas').textContent = '—';
+      }
+
+      // Tarjetas de tareas dinámicas (1..N)
+      const grid = document.getElementById('tasksGrid');
+      grid.innerHTML = '';
+      document.getElementById('fbPanel').classList.remove('on');
+
+      let firstCard = null;
+
+      if (data.tasks) {
+        Object.keys(data.tasks).forEach(tid => {
+          const td = data.tasks[tid];
+          const el = makeCard(tid, td);
+          grid.appendChild(el);
+          if (!firstCard) firstCard = { tid, td, el };
+        });
+      }
+
+      resultsEl.style.display = 'block';
+
+      if (firstCard) {
+        firstCard.el.classList.add('active');
+        showFeedback(firstCard.tid, firstCard.td);
+      }
+    }
+
+    function makeCard(tid, td) {
+      const label = CONFIG.TASK_LABELS[tid] || tid;
+      const card = document.createElement('div');
+      card.className = 'task-card';
+
+      const found = td && td.found;
+      const entrego = found && (td.entrego === 'SI' || td.nota > 0 || String(td.entrego || '').trim().toUpperCase() === 'SI');
+      const notaRaw = found ? td.nota : null;
+      const nota = (notaRaw !== null && notaRaw !== '')
+        ? parseFloat(String(notaRaw).replace(',', '.'))
+        : NaN;
+      const maxNota = found ? td.maxNota : null;
+
+      let gc, tint, statusClass, statusText, notaStr;
+
+      if (!found || (isNaN(nota) && !entrego)) {
+        gc = 'g-nil'; tint = 'var(--nil)';
+        statusClass = 's-no'; statusText = '✗ Sin entrega';
+        notaStr = '—';
+      } else {
+        statusClass = 's-ok'; statusText = '✓ Presentado';
+        var pct = (maxNota && !isNaN(maxNota) && maxNota > 0) ? (nota / maxNota) : (nota / 10);
+        if (isNaN(nota)) {
+          gc = 'g-nil'; tint = 'var(--nil)'; notaStr = '?';
+        } else if (pct >= 0.75 || nota >= 8) {
+          gc = 'g-ok'; tint = 'var(--ok)';
+          notaStr = fmtNota(nota) + (maxNota ? ('/' + maxNota) : '');
+        } else if (pct >= 0.51 || nota >= 6) {
+          gc = 'g-mid'; tint = 'var(--mid)';
+          notaStr = fmtNota(nota) + (maxNota ? ('/' + maxNota) : '');
+        } else {
+          gc = 'g-low'; tint = 'var(--low)';
+          notaStr = fmtNota(nota) + (maxNota ? ('/' + maxNota) : '');
+        }
+      }
+
+      card.style.setProperty('--tint', tint);
+      card.innerHTML = `
     <div class="t-label">${label}</div>
-    <div class="grade-ring ${gc}">${notaStr}</div>
+    <div class="grade-ring ${gc}" style="${notaStr.length > 5 ? 'font-size:12px;' : ''}">${notaStr}</div>
     <div class="t-status ${statusClass}">${statusText}</div>
   `;
 
-  card.addEventListener('click', () => {
-    document.querySelectorAll('.task-card').forEach(c => c.classList.remove('active'));
-    card.classList.add('active');
-    showFeedback(tid, td);
-  });
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.task-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        showFeedback(tid, td);
+      });
 
-  return card;
-}
+      return card;
+    }
 
+    function showFeedback(tid, td) {
+      const label = CONFIG.TASK_LABELS[tid] || tid;
+      const panel = document.getElementById('fbPanel');
+      const fbBody = document.getElementById('fbBody');
 
-/* ── Mostrar feedback ───────────────────────────────────────── */
-function showFeedback(tid, td) {
-  const label  = CONFIG.TASK_LABELS[tid] || tid;
-  const panel  = document.getElementById('fbPanel');
-  const fbBody = document.getElementById('fbBody');
+      document.getElementById('fbTitle').textContent = 'Feedback — ' + label;
 
-  document.getElementById('fbTitle').textContent = 'Feedback — ' + label;
+      if (!td || !td.found) {
+        fbBody.className = 'fb-body empty';
+        fbBody.textContent = 'Sin registro de entrega para esta tarea.';
+      } else if (!td.feedback) {
+        fbBody.className = 'fb-body empty';
+        fbBody.textContent = 'Sin comentarios disponibles.';
+      } else {
+        fbBody.className = 'fb-body';
+        fbBody.textContent = td.feedback;
+      }
 
-  if (!td || !td.found) {
-    fbBody.className    = 'fb-body empty';
-    fbBody.textContent  = 'Sin registro de entrega para esta tarea.';
-  } else if (!td.feedback) {
-    fbBody.className    = 'fb-body empty';
-    fbBody.textContent  = 'Sin comentarios disponibles.';
-  } else {
-    fbBody.className    = 'fb-body';
-    fbBody.textContent  = td.feedback;
-  }
+      panel.classList.add('on');
+    }
 
-  panel.classList.add('on');
-}
+    function fmtNota(n) {
+      return n % 1 === 0 ? n.toString() : n.toFixed(2).replace('.', ',');
+    }
 
+    function setLoading(on) {
+      loader.classList.toggle('on', on);
+      searchBtn.disabled = on;
+    }
 
-/* ── Utilidades ─────────────────────────────────────────────── */
-function fmtNota(n) {
-  // Enteros sin decimales, decimales con coma (formato es-BO)
-  return n % 1 === 0
-    ? n.toString()
-    : n.toFixed(2).replace('.', ',');
-}
+    function showErr(msg) {
+      errMsg.textContent = msg;
+      errMsg.classList.add('on');
+    }
 
-function setLoading(on) {
-  loader.classList.toggle('on', on);
-  searchBtn.disabled = on;
-}
+    function clearErr() {
+      errMsg.classList.remove('on');
+    }
 
-function showErr(msg) {
-  errMsg.textContent = msg;
-  errMsg.classList.add('on');
-}
-
-function clearErr() {
-  errMsg.classList.remove('on');
-}
-
-</script>
+  </script>
 </body>
+
 </html>

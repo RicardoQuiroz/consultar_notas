@@ -1377,18 +1377,27 @@
       }
     }
 
+    function parseNotaFrontend(val) {
+      if (val === null || val === undefined || val === '') return NaN;
+      const str = String(val).trim();
+      if (!str) return NaN;
+      if (/^\d{4}[-\/]\d{1,2}[-\/]\d{1,2}/.test(str) || /^\d{1,2}[-\/]\d{1,2}[-\/]\d{4}/.test(str) || /gmt/i.test(str)) {
+        return NaN;
+      }
+      const num = parseFloat(str.replace(',', '.'));
+      if (isNaN(num) || !isFinite(num) || num > 500 || num < 0) return NaN;
+      return num;
+    }
+
     function makeCard(tid, td) {
       const label = CONFIG.TASK_LABELS[tid] || tid;
       const card = document.createElement('div');
       card.className = 'task-card';
 
       const found = td && td.found;
-      const entrego = found && (td.entrego === 'SI' || td.nota > 0 || String(td.entrego || '').trim().toUpperCase() === 'SI');
-      const notaRaw = found ? td.nota : null;
-      const nota = (notaRaw !== null && notaRaw !== '')
-        ? parseFloat(String(notaRaw).replace(',', '.'))
-        : NaN;
-      const maxNota = found ? td.maxNota : null;
+      const nota = found ? parseNotaFrontend(td.nota) : NaN;
+      const entrego = found && (td.entrego === 'SI' || !isNaN(nota) || String(td.entrego || '').trim().toUpperCase() === 'SI');
+      const maxNota = found ? parseNotaFrontend(td.maxNota) : null;
 
       let gc, tint, statusClass, statusText, notaStr;
 
@@ -1451,7 +1460,9 @@
     }
 
     function fmtNota(n) {
-      return n % 1 === 0 ? n.toString() : n.toFixed(2).replace('.', ',');
+      if (isNaN(n) || n === null) return '—';
+      if (n % 1 === 0) return n.toString();
+      return n.toFixed(2).replace(/\.?0+$/, '').replace('.', ',');
     }
 
     function setLoading(on) {
